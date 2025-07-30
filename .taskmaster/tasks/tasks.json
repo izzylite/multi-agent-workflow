@@ -1,0 +1,276 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup CLI Application Framework",
+        "description": "Create the foundation for the Python command-line interface using argparse with basic command structure and configuration options.",
+        "details": "Implement a Python CLI application using argparse library to handle command-line arguments and options. Create a modular structure with the following components:\n\n1. Main entry point (scraping_cli.py)\n2. Command parser module for handling different commands (scrape, list, export)\n3. Configuration module for managing CLI flags and options\n4. Basic logging setup using Python's logging module\n\nImplement the basic command structure as specified in the PRD: `python scraping_cli.py scrape --vendor tesco --urls \"url1\" \"url2\"`\n\nAdd support for the following CLI flags:\n- `--vendor`: Specify target vendor (tesco, asda, costco)\n- `--urls`: List of URLs to scrape\n- `--category`: Product category for specialized scraping\n- `--output`: Output file path for results\n- `--format`: Output format (json, csv)\n- `--verbose`: Enable detailed logging\n\nUse Python 3.10+ and create a proper package structure with requirements.txt including argparse and other necessary dependencies.",
+        "testStrategy": "1. Unit tests for argument parsing with different combinations of flags\n2. Integration test to verify command execution flow\n3. Manual testing of CLI interface with sample commands\n4. Verify help text and documentation is generated correctly\n5. Test error handling for invalid arguments",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Main Entry Point Script",
+            "description": "Develop the main entry point script (scraping_cli.py) that initializes the CLI application and delegates command handling.",
+            "dependencies": [],
+            "details": "Implement scraping_cli.py to serve as the executable entry point. This script should import the command parser and configuration modules, initialize logging, and invoke the argument parsing logic.\n<info added on 2025-07-30T00:59:36.596Z>\nImplementation completed for the main entry point script (scraping_cli.py) with all required functionality. The script now includes:\n\n- Proper shebang and docstring for executable functionality\n- Complete argparse implementation with subcommands (scrape, list, export)\n- All required CLI flags implemented (--vendor, --urls, --category, --output, --format, --verbose)\n- Configurable logging system with verbosity control\n- Placeholder handlers for all subcommands\n- Robust error handling with appropriate exit codes\n- Comprehensive help text and usage examples\n\nTesting confirms the CLI functions correctly, with proper help display, argument validation, logging, and command routing. This subtask is now complete and ready for the next phase of implementing the command parser module.\n</info added on 2025-07-30T00:59:36.596Z>",
+            "status": "done",
+            "testStrategy": "Verify that running 'python scraping_cli.py --help' displays the CLI help text and that the script executes without errors."
+          },
+          {
+            "id": 2,
+            "title": "Implement Command Parser Module",
+            "description": "Develop a command parser module to handle subcommands (scrape, list, export) and their associated arguments using argparse.",
+            "dependencies": [
+              "1.1"
+            ],
+            "details": "Create a module that defines the argparse.ArgumentParser, adds subparsers for each command, and registers all required CLI flags (--vendor, --urls, --category, --output, --format, --verbose). Ensure each subcommand has appropriate help text and argument validation.\n<info added on 2025-07-30T01:00:40.804Z>\nImplementation completed for the Command Parser Module with the following details:\n\nCreated dedicated `scraping_cli/parser.py` module with `CommandParser` class that encapsulates all parsing logic. The module follows a modular design with separate methods for each command parser (`_add_scrape_parser`, `_add_list_parser`, `_add_export_parser`). \n\nThe implementation includes:\n- Proper separation of concerns with dedicated parser methods\n- Comprehensive help text and argument validation for all commands\n- Clean interface with `create_parser()` factory function\n- Proper type hints and documentation\n- Package structure with `scraping_cli/__init__.py`\n\nThe main script has been updated to use the new parser module. Testing confirms that CLI help displays correctly with all commands and options, command parsing works identically to previous implementation, verbose logging and argument validation function properly, and all subcommands and flags are accessible and validated.\n\nThe command parser module is now complete and ready for integration with the configuration module in the next subtask.\n</info added on 2025-07-30T01:00:40.804Z>",
+            "status": "done",
+            "testStrategy": "Write unit tests to check correct parsing of all commands and flags, including error handling for invalid or missing arguments."
+          },
+          {
+            "id": 3,
+            "title": "Develop Configuration Module",
+            "description": "Create a configuration module to manage CLI flags, options, and default values, and to provide configuration objects to other components.",
+            "dependencies": [
+              "1.2"
+            ],
+            "details": "Implement logic to centralize configuration management, including parsing and validation of CLI options, and exposing configuration data structures for use by the application.\n<info added on 2025-07-30T01:01:53.344Z>\n## Implementation Summary\n\nSuccessfully implemented the configuration module with a comprehensive architecture:\n\n- Created dedicated `scraping_cli/config.py` module for centralized configuration management\n- Implemented type-safe configuration using dataclasses and enums\n- Added `Vendor` and `OutputFormat` enums for type safety\n- Created specific configuration classes: `ScrapeConfig`, `ListConfig`, `ExportConfig`, `GlobalConfig`\n- Implemented `ConfigurationManager` class for centralized configuration handling\n- Added validation logic with proper error handling\n\nThe architecture provides several improvements:\n- Type-safe configuration with dataclasses and enums\n- Centralized configuration parsing and validation\n- Proper error handling with descriptive error messages\n- Configuration objects that can be easily passed between components\n- Support for default output path generation with timestamps\n\nTesting confirms the configuration system works correctly:\n- CLI commands function properly with the new configuration system\n- Verbose logging and argument validation function as expected\n- Error handling works for invalid configurations\n- All subcommands parse configuration correctly\n- Type safety prevents invalid vendor/format values\n\nThe configuration module is now complete and ready for integration with the logging system in the next subtask.\n</info added on 2025-07-30T01:01:53.344Z>",
+            "status": "done",
+            "testStrategy": "Test that configuration values are correctly parsed and accessible for all supported flags and options."
+          },
+          {
+            "id": 4,
+            "title": "Set Up Basic Logging System",
+            "description": "Integrate Python's logging module to provide configurable logging levels, including support for the --verbose flag.",
+            "dependencies": [
+              "1.1"
+            ],
+            "details": "Configure logging in the main script and/or a dedicated logging module. Ensure that enabling --verbose sets the logging level to DEBUG and that logs are formatted consistently.\n<info added on 2025-07-30T01:03:09.455Z>\nSuccessfully implemented the enhanced logging system with the following achievements:\n\n✅ **Completed Features:**\n- Created dedicated `scraping_cli/logging_config.py` module with comprehensive logging management\n- Implemented `LoggingManager` class for centralized logging configuration\n- Added `LogLevel` enum for type-safe log levels\n- Created `LogFormatter` class for consistent log formatting\n- Enhanced logging with structured command start/end logging\n- Added support for file logging and multiple handlers\n- Implemented proper error logging with context\n\n✅ **Architecture Improvements:**\n- Modular logging system with dedicated manager class\n- Type-safe log levels using enums\n- Consistent formatting across all log messages\n- Structured logging for command execution tracking\n- Support for both console and file logging\n- Proper error handling with context information\n\n✅ **Testing Results:**\n- Verbose logging works correctly with DEBUG level\n- Non-verbose logging shows INFO level messages\n- Command start/end logging provides clear execution tracking\n- Error logging includes proper context information\n- Log formatting is consistent and readable\n- All logging levels function as expected\n\n**Next Steps:** The logging system is complete and ready. The next subtask (1.5) will establish the package structure and requirements.txt file.\n</info added on 2025-07-30T01:03:09.455Z>",
+            "status": "done",
+            "testStrategy": "Test that log messages appear at the correct verbosity level and that --verbose enables detailed output."
+          },
+          {
+            "id": 5,
+            "title": "Establish Package Structure and Requirements",
+            "description": "Organize the CLI application into a modular Python package and create a requirements.txt file listing argparse and other dependencies.",
+            "dependencies": [
+              "1.1",
+              "1.2",
+              "1.3",
+              "1.4"
+            ],
+            "details": "Arrange source files into a package directory structure, ensure all modules are importable, and document dependencies in requirements.txt. Include instructions for installation and usage.\n<info added on 2025-07-30T01:04:22.771Z>\nSuccessfully established the package structure and requirements with the following achievements:\n\n✅ **Completed Features:**\n- Created comprehensive `requirements.txt` with all necessary dependencies\n- Implemented `setup.py` for proper package installation\n- Created detailed `README.md` with installation and usage instructions\n- Organized code into modular package structure (`scraping_cli/`)\n- Added proper package metadata and classifiers\n- Included console script entry point for easy installation\n\n✅ **Package Structure:**\n- `scraping_cli/__init__.py`: Package initialization with version info\n- `scraping_cli/parser.py`: Command-line argument parsing module\n- `scraping_cli/config.py`: Configuration management module\n- `scraping_cli/logging_config.py`: Logging setup module\n- `scraping_cli.py`: Main entry point script\n- `requirements.txt`: Python dependencies\n- `setup.py`: Package setup and installation\n- `README.md`: Comprehensive documentation\n\n✅ **Testing Results:**\n- Package imports successfully without errors\n- All modules can be imported individually\n- CLI functionality preserved with package structure\n- Dependencies properly documented for future development\n- Installation instructions provided for users\n\n**Next Steps:** The CLI application framework is now complete and ready for the next phase of development. All subtasks for Task 1 are finished.\n</info added on 2025-07-30T01:04:22.771Z>",
+            "status": "done",
+            "testStrategy": "Test that the package installs correctly, all modules are importable, and the CLI runs as expected after installation."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "URL Input System Implementation",
+        "description": "Develop a system to validate, parse and process multiple URLs provided via command-line arguments.",
+        "details": "Create a URL processing module that handles validation and normalization of input URLs:\n\n1. Implement URL validation using Python's `urllib.parse` to verify URL format\n2. Add support for multiple URL input methods:\n   - Direct command-line arguments\n   - Text file with one URL per line (--url-file option)\n   - Standard input for piping URLs\n3. Normalize URLs to ensure consistent format (add missing protocols, remove tracking parameters)\n4. Add vendor-specific URL validation to ensure URLs match expected patterns for Tesco, Asda, and Costco\n5. Implement URL categorization to identify product pages, category pages, and search results\n6. Create URL queue management for processing multiple URLs\n\nUse validators library (v0.20.0+) for URL validation and urllib.parse for URL manipulation. Implement proper error handling for malformed URLs with helpful error messages.",
+        "testStrategy": "1. Unit tests for URL validation with valid and invalid URLs\n2. Test URL normalization with various input formats\n3. Test vendor-specific URL validation\n4. Test URL categorization logic\n5. Integration test with the CLI argument parser\n6. Test error handling for malformed URLs",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "CrewAI Integration",
+        "description": "Integrate CrewAI 0.150.0 framework for agent orchestration with async tool execution and enhanced observability.",
+        "details": "Implement CrewAI integration for agent orchestration:\n\n1. Install CrewAI 0.150.0 via pip and set up the core orchestration components\n2. Create a CrewAI Crew class to manage agent coordination\n3. Implement the Agent base class with configurable capabilities\n4. Set up the Task class for defining scraping tasks\n5. Configure CrewAI's async tool execution for concurrent operations\n6. Implement CrewAI's MemoryEvents for enhanced observability\n7. Create a simple agent communication protocol\n8. Set up the agent lifecycle management (creation, execution, termination)\n\nLeverage CrewAI's latest features including:\n- Async tool execution for concurrent browser sessions\n- Enhanced observability through MemoryEvents\n- Improved error handling and retry mechanisms\n- Agent-to-agent communication\n\nImplement a factory pattern for creating different types of agents based on vendor and category requirements.",
+        "testStrategy": "1. Unit tests for agent creation and configuration\n2. Test async tool execution with mock tasks\n3. Verify MemoryEvents capture relevant information\n4. Test agent communication with simple messages\n5. Integration test with a simple scraping task\n6. Test error handling and recovery mechanisms",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Browserbase Integration",
+        "description": "Integrate Browserbase API for cloud browser session management and web automation as the primary scraping tool.",
+        "details": "Implement Browserbase integration for cloud browser automation:\n\n1. Create a BrowserbaseManager class to handle session creation, management, and cleanup\n2. Implement session pooling for efficient resource utilization\n3. Add configuration options for Browserbase sessions (user agents, proxies, etc.)\n4. Create wrapper methods for common browser operations:\n   - Navigation (goto, back, forward)\n   - Element selection and interaction (click, type, select)\n   - Content extraction (text, attributes, HTML)\n   - Screenshot and visual verification\n5. Implement session health monitoring and automatic recovery\n6. Add proper error handling for network issues and session failures\n7. Implement session cleanup to prevent resource leaks\n\nUse the official Browserbase Python SDK (latest version) and implement proper authentication handling with environment variables for API keys. Add configurable timeouts and retry logic for resilience.",
+        "testStrategy": "1. Unit tests for BrowserbaseManager with mock API responses\n2. Test session creation and configuration\n3. Test browser operation wrappers\n4. Test session health monitoring and recovery\n5. Test error handling with simulated failures\n6. Integration test with a simple navigation task\n7. Verify proper session cleanup",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Browserbase Agent Tools Development",
+        "description": "Create CrewAI tools that leverage Browserbase for navigation, element interaction, and data extraction.",
+        "details": "Develop a set of CrewAI tools that wrap Browserbase functionality for agent use:\n\n1. Create a BrowserbaseTool base class that integrates with CrewAI's tool system\n2. Implement the following specific tools:\n   - NavigationTool: Page navigation, URL handling, and history management\n   - InteractionTool: Element selection, clicking, typing, and form submission\n   - ExtractionTool: Data extraction from pages (text, attributes, structured data)\n   - ScreenshotTool: Capture screenshots for verification and debugging\n   - WaitingTool: Handle dynamic content loading and timing\n3. Add anti-bot features using Browserbase capabilities:\n   - Random delays between actions\n   - Human-like mouse movements\n   - Rotating user agents\n   - Proxy support\n4. Implement tool result caching to prevent redundant operations\n5. Add detailed logging for tool operations\n6. Create vendor-specific tool extensions for Tesco, Asda, and Costco\n\nUse async/await pattern for all tools to support concurrent execution. Implement proper error handling with specific exception types for different failure scenarios.",
+        "testStrategy": "1. Unit tests for each tool with mock Browserbase sessions\n2. Test tool integration with CrewAI agents\n3. Test anti-bot features\n4. Test tool result caching\n5. Integration test with simple scraping scenarios\n6. Test error handling and recovery\n7. Test vendor-specific tool extensions",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "File-Based Data Storage System",
+        "description": "Implement a JSON file storage and retrieval system for scraped product data with automatic organization.",
+        "details": "Create a file-based storage system for scraped product data:\n\n1. Implement a StorageManager class to handle file operations\n2. Create a directory structure for organizing results:\n   - By vendor (tesco, asda, costco)\n   - By category (grocery, household, etc.)\n   - By date (YYYY-MM-DD)\n3. Implement JSON serialization/deserialization with proper error handling\n4. Add support for incremental saves to prevent data loss during long scraping sessions\n5. Implement data compression for large result sets\n6. Add file locking to prevent concurrent write issues\n7. Create a simple query interface for retrieving stored results\n8. Implement automatic file rotation and cleanup for old results\n\nUse Python's built-in json module with custom encoders/decoders for handling special data types. Implement proper error handling for file operations with automatic recovery. Use atomic write operations to prevent data corruption.",
+        "testStrategy": "1. Unit tests for file operations with mock filesystem\n2. Test JSON serialization/deserialization with sample product data\n3. Test directory structure creation and organization\n4. Test incremental saves and data recovery\n5. Test compression and decompression\n6. Test file locking with concurrent operations\n7. Test query interface with sample data\n8. Integration test with the full scraping pipeline",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "CLI Progress Monitoring System",
+        "description": "Implement real-time progress output and status updates for the CLI interface.",
+        "details": "Create a progress monitoring system for the CLI interface:\n\n1. Implement a ProgressMonitor class to track scraping progress\n2. Use tqdm (v4.65.0+) for progress bars in the terminal\n3. Create different progress display modes:\n   - Simple: Basic progress percentage\n   - Detailed: Task breakdown with individual progress\n   - Debug: Verbose output with all operations\n4. Implement real-time status updates for:\n   - Agent status (idle, working, error)\n   - Browser session status\n   - Task completion status\n   - Error counts and types\n5. Add support for ANSI colors and formatting for better readability\n6. Implement log rotation and filtering\n7. Create a summary view for overall progress\n\nUse Python's logging module for consistent message formatting and level-based filtering. Implement proper terminal width detection for responsive display. Add support for non-interactive terminals (CI/CD environments).",
+        "testStrategy": "1. Unit tests for ProgressMonitor with mock data\n2. Test different display modes\n3. Test status update mechanisms\n4. Test ANSI color support with different terminals\n5. Test log rotation and filtering\n6. Test summary view generation\n7. Integration test with the full scraping pipeline\n8. Test in non-interactive environments",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Results Management System",
+        "description": "Develop CLI commands to list, view, and export previous scraping results.",
+        "details": "Implement a results management system with CLI commands:\n\n1. Create a ResultsManager class to handle result operations\n2. Implement the following CLI commands:\n   - `list`: List available result sets with metadata\n   - `view`: Display detailed information about a specific result\n   - `export`: Export results to different formats (JSON, CSV, Excel)\n   - `delete`: Remove old or unwanted results\n   - `stats`: Show statistics about stored results\n3. Add filtering options for result listing:\n   - By vendor\n   - By category\n   - By date range\n   - By product count\n4. Implement pagination for large result sets\n5. Add sorting options for result display\n6. Create tabular output formatting using tabulate (v0.9.0+)\n7. Implement export format conversion with proper error handling\n\nUse pandas (v2.0.0+) for data manipulation and export to different formats. Implement proper error handling for file operations and format conversions. Add progress indicators for long-running export operations.",
+        "testStrategy": "1. Unit tests for ResultsManager with mock data\n2. Test CLI command implementations\n3. Test filtering and pagination\n4. Test sorting options\n5. Test tabular output formatting\n6. Test export format conversion\n7. Integration test with the full scraping pipeline\n8. Test with large result sets",
+        "priority": "medium",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Tesco Integration",
+        "description": "Implement Browserbase-based scraping strategies for Tesco's grocery platform.",
+        "details": "Develop Tesco-specific scraping components:\n\n1. Create a TescoAgent class extending the base Agent\n2. Implement Tesco-specific navigation strategies:\n   - Category navigation\n   - Product listing pages\n   - Product detail pages\n   - Pagination handling\n3. Create selectors for Tesco's website elements:\n   - Product cards\n   - Price elements\n   - Product details\n   - Images\n   - Specifications\n4. Implement data extraction for Tesco products:\n   - Title and description\n   - Price and discounts\n   - Product images\n   - Specifications and attributes\n   - Availability and stock status\n5. Add handling for Tesco-specific challenges:\n   - Cookie consent dialogs\n   - Login prompts\n   - Age verification\n   - Location selection\n6. Implement rate limiting and request spacing\n\nUse CSS selectors and XPath for reliable element selection. Implement proper error handling for site structure changes with fallback strategies. Add specific anti-bot measures for Tesco's protection systems.",
+        "testStrategy": "1. Unit tests for TescoAgent with mock Browserbase sessions\n2. Test navigation strategies with sample URLs\n3. Test element selectors with sample HTML\n4. Test data extraction with sample product pages\n5. Test handling of Tesco-specific challenges\n6. Integration test with live Tesco URLs (limited scope)\n7. Test rate limiting and request spacing\n8. Verify data quality with manual validation",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Asda Integration",
+        "description": "Create vendor-specific data extraction rules for Asda's online store.",
+        "details": "Develop Asda-specific scraping components:\n\n1. Create an AsdaAgent class extending the base Agent\n2. Implement Asda-specific navigation strategies:\n   - Category navigation\n   - Product listing pages\n   - Product detail pages\n   - Pagination and infinite scroll handling\n3. Create selectors for Asda's website elements:\n   - Product cards\n   - Price elements\n   - Product details\n   - Images\n   - Specifications\n4. Implement data extraction for Asda products:\n   - Title and description\n   - Price and discounts\n   - Product images\n   - Specifications and attributes\n   - Availability and stock status\n5. Add handling for Asda-specific challenges:\n   - Cookie consent dialogs\n   - Login prompts\n   - Age verification\n   - Location selection\n   - Dynamic content loading\n6. Implement rate limiting and request spacing\n\nUse CSS selectors and XPath for reliable element selection. Implement proper error handling for site structure changes with fallback strategies. Add specific anti-bot measures for Asda's protection systems. Handle Asda's JavaScript-heavy interface with proper waiting strategies.",
+        "testStrategy": "1. Unit tests for AsdaAgent with mock Browserbase sessions\n2. Test navigation strategies with sample URLs\n3. Test element selectors with sample HTML\n4. Test data extraction with sample product pages\n5. Test handling of Asda-specific challenges\n6. Test infinite scroll handling\n7. Integration test with live Asda URLs (limited scope)\n8. Test rate limiting and request spacing\n9. Verify data quality with manual validation",
+        "priority": "medium",
+        "dependencies": [
+          3,
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "Costco Integration",
+        "description": "Develop scraping logic for Costco's UK wholesale platform.",
+        "details": "Develop Costco-specific scraping components:\n\n1. Create a CostcoAgent class extending the base Agent\n2. Implement Costco-specific navigation strategies:\n   - Category navigation\n   - Product listing pages\n   - Product detail pages\n   - Pagination handling\n3. Create selectors for Costco's website elements:\n   - Product cards\n   - Price elements\n   - Product details\n   - Images\n   - Specifications\n4. Implement data extraction for Costco products:\n   - Title and description\n   - Price and discounts\n   - Product images\n   - Specifications and attributes\n   - Availability and stock status\n   - Membership requirements\n5. Add handling for Costco-specific challenges:\n   - Cookie consent dialogs\n   - Login prompts\n   - Membership verification\n   - Location selection\n6. Implement rate limiting and request spacing\n\nUse CSS selectors and XPath for reliable element selection. Implement proper error handling for site structure changes with fallback strategies. Add specific anti-bot measures for Costco's protection systems. Handle Costco's membership requirements with appropriate session management.",
+        "testStrategy": "1. Unit tests for CostcoAgent with mock Browserbase sessions\n2. Test navigation strategies with sample URLs\n3. Test element selectors with sample HTML\n4. Test data extraction with sample product pages\n5. Test handling of Costco-specific challenges\n6. Integration test with live Costco URLs (limited scope)\n7. Test rate limiting and request spacing\n8. Verify data quality with manual validation",
+        "priority": "medium",
+        "dependencies": [
+          3,
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Async Agent Deployment System",
+        "description": "Leverage CrewAI 0.150.0's async tool execution for concurrent Browserbase sessions.",
+        "details": "Implement an async agent deployment system:\n\n1. Create an AgentDeployer class to manage concurrent agent execution\n2. Implement async task distribution using CrewAI 0.150.0's async tool execution\n3. Create a session pool manager for Browserbase sessions\n4. Implement dynamic scaling based on available resources\n5. Add concurrency controls to prevent overloading:\n   - Max concurrent agents per vendor\n   - Max concurrent sessions overall\n   - Rate limiting per domain\n6. Implement proper error handling for concurrent execution\n7. Add monitoring for concurrent agent performance\n8. Create a graceful shutdown mechanism for all agents and sessions\n\nUse Python's asyncio for asynchronous execution. Implement proper resource management to prevent memory leaks. Add circuit breakers for failing vendors to prevent cascading failures. Use semaphores to control concurrency levels.",
+        "testStrategy": "1. Unit tests for AgentDeployer with mock agents\n2. Test async task distribution\n3. Test session pool management\n4. Test dynamic scaling\n5. Test concurrency controls\n6. Test error handling with simulated failures\n7. Test monitoring capabilities\n8. Test graceful shutdown\n9. Integration test with multiple concurrent agents\n10. Performance testing with varying concurrency levels",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4,
+          5,
+          9,
+          10,
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Intelligent Load Balancing System",
+        "description": "Distribute tasks based on agent capabilities and Browserbase session availability.",
+        "details": "Implement an intelligent load balancing system:\n\n1. Create a LoadBalancer class to distribute tasks across agents\n2. Implement the following load balancing strategies:\n   - Round-robin: Simple task distribution\n   - Capability-based: Match tasks to agent capabilities\n   - Performance-based: Assign more tasks to faster agents\n   - Availability-based: Consider Browserbase session availability\n3. Add dynamic priority adjustment based on:\n   - Task importance\n   - Agent performance history\n   - Vendor response times\n   - Error rates\n4. Implement task queuing with priority levels\n5. Add support for task preemption for high-priority tasks\n6. Create a feedback loop for continuous optimization\n7. Implement proper error handling and task reassignment\n\nUse a priority queue implementation for task management. Implement performance metrics collection for informed decision-making. Add adaptive rate limiting based on vendor response patterns. Use machine learning techniques (simple heuristics initially) to optimize task distribution over time.",
+        "testStrategy": "1. Unit tests for LoadBalancer with mock agents and tasks\n2. Test different load balancing strategies\n3. Test priority adjustment mechanisms\n4. Test task queuing and preemption\n5. Test feedback loop with simulated performance data\n6. Test error handling and task reassignment\n7. Integration test with the full agent system\n8. Performance testing with varying load patterns",
+        "priority": "medium",
+        "dependencies": [
+          12
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "Data Validation and Cleaning System",
+        "description": "Implement real-time data validation and cleaning for scraped product data.",
+        "details": "Create a data validation and cleaning system:\n\n1. Implement a DataValidator class with the following features:\n   - Schema validation for product data\n   - Type checking and conversion\n   - Required field validation\n   - Format validation (URLs, prices, etc.)\n   - Cross-field validation\n2. Create a DataCleaner class with the following features:\n   - Text normalization (whitespace, special characters)\n   - Price normalization (currency, format)\n   - Unit conversion and standardization\n   - HTML tag removal\n   - Duplicate detection and merging\n3. Implement vendor-specific validation rules for:\n   - Tesco product data\n   - Asda product data\n   - Costco product data\n4. Add data enrichment capabilities:\n   - Category standardization\n   - Brand extraction\n   - Size/weight parsing\n   - Nutritional information extraction\n5. Implement validation reporting and error logging\n\nUse Pydantic (v2.0.0+) for schema validation. Implement proper error handling with specific error types for different validation issues. Add configurable validation strictness levels. Use regular expressions for pattern matching and extraction.",
+        "testStrategy": "1. Unit tests for DataValidator with sample product data\n2. Test DataCleaner with various input formats\n3. Test vendor-specific validation rules\n4. Test data enrichment capabilities\n5. Test validation reporting\n6. Test with invalid and edge case data\n7. Integration test with the full scraping pipeline\n8. Performance testing with large datasets",
+        "priority": "medium",
+        "dependencies": [
+          9,
+          10,
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Enhanced Results Display and Export System",
+        "description": "Implement rich CLI output with tables and formatting, and support for multiple export formats.",
+        "details": "Develop an enhanced results display and export system:\n\n1. Create a ResultsFormatter class with the following features:\n   - Table formatting using tabulate (v0.9.0+)\n   - Color-coded output using colorama (v0.4.6+)\n   - Summary statistics generation\n   - Customizable display templates\n2. Implement an ExportManager class with support for:\n   - JSON export with pretty printing and minification options\n   - CSV export with configurable delimiters and quoting\n   - Excel export with formatting and multiple sheets\n   - Markdown export for documentation\n3. Add the following export features:\n   - Selective field export\n   - Filtering before export\n   - Sorting options\n   - Batch export\n   - Incremental export\n4. Implement progress tracking for long-running exports\n5. Add export validation to ensure data integrity\n6. Create export templates for common use cases\n\nUse pandas (v2.0.0+) for data manipulation and export. Use openpyxl (v3.1.0+) for Excel export with formatting. Implement proper error handling for export operations. Add compression support for large exports.",
+        "testStrategy": "1. Unit tests for ResultsFormatter with sample data\n2. Test ExportManager with different export formats\n3. Test selective field export and filtering\n4. Test sorting and batch export\n5. Test progress tracking for long exports\n6. Test export validation\n7. Test with large datasets\n8. Integration test with the full scraping pipeline",
+        "priority": "medium",
+        "dependencies": [
+          8,
+          14
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-30T00:54:46.896Z",
+      "updated": "2025-07-30T01:04:29.260Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

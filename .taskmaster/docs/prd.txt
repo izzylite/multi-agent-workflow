@@ -1,0 +1,205 @@
+<context>
+# Overview
+Browserbase + CrewAI POC is a proof-of-concept command-line tool that combines cloud browser automation with multi-agent AI orchestration to scrape thousands of products from UK vendors simultaneously. The system starts as a CLI script for rapid development and testing, with optional web interface to be added later. It uses open-source libraries to create a scalable, distributed web scraping platform where multiple AI agents work concurrently to extract product data from various UK e-commerce sites.
+
+# Core Features  
+## Multi-Agent Scraping Architecture
+- CrewAI-based agent orchestration for distributed scraping
+- Multiple agents working simultaneously on different sites/categories
+- Agent specialization for different vendor types and product categories
+- Concurrent session management across multiple browser instances
+
+## Browserbase Integration
+- Cloud-based browser sessions for each agent
+- Session isolation and resource management
+- Real-time browser control and monitoring
+- Automatic session cleanup and error recovery
+
+## UK Vendor Product Scraping
+- Support for major UK grocery and retail platforms (Tesco, Asda, Costco)
+- Product data extraction (title, price, description, images, specifications, availability)
+- Category-based scraping strategies for grocery and household items
+- Pagination and infinite scroll handling for product listings
+- Store-specific product categorization and filtering
+
+## Data Processing & Storage
+- Structured product data extraction and normalization
+- Real-time data validation and cleaning
+- JSON/CSV export capabilities
+- Database storage for scraped products
+
+## Agent Management System
+- Agent task assignment and load balancing
+- Progress monitoring and status tracking
+- Error handling and retry mechanisms
+- Agent performance analytics
+
+# User Experience
+## Primary User Personas
+- **Data Scientists**: Need comprehensive product datasets for market analysis
+- **E-commerce Analysts**: Require competitor pricing and product information
+- **Market Researchers**: Need to track product availability and trends
+- **Business Intelligence Teams**: Require aggregated product data for insights
+
+## Key User Flows (CLI-First Approach)
+1. **Command-Line Configuration**: User runs CLI script with vendor, category, and URL parameters
+2. **Agent Deployment**: System deploys multiple agents with specific tasks via CLI
+3. **Progress Monitoring**: User monitors scraping progress through CLI output and logs
+4. **Data Collection**: System aggregates and validates scraped product data automatically
+5. **Results Access**: User views results via CLI commands or exported files
+
+## CLI Interface Design
+- **Simple Command Structure**: `python scraping_cli.py scrape --vendor tesco --urls "url1" "url2"`
+- **URL Input**: Command-line arguments for multiple URLs to scrape
+- **Configuration Options**: CLI flags for vendor selection, categories, and scraping parameters
+- **Progress Output**: Real-time CLI progress updates and status messages
+- **Results Management**: CLI commands to list, view, and export previous results
+- **File-Based Export**: Automatic JSON export with optional CSV/Excel conversion
+- **Future Web Interface**: Optional web UI to be added after CLI is fully functional
+</context>
+<PRD>
+# Technical Architecture
+## System Components (CLI-First)
+- **CLI Application**: Python command-line interface for user interaction and configuration
+- **CrewAI Orchestrator**: Manages agent coordination and task distribution
+- **Browserbase Manager**: Handles cloud browser session allocation and management
+- **Agent Pool**: Multiple specialized scraping agents with different capabilities
+- **Data Processor**: Handles data extraction, validation, and file-based storage
+- **Task Scheduler**: Distributes scraping tasks across available agents
+- **Results Manager**: Handles result storage, retrieval, and export functionality
+- **Logging System**: Tracks agent performance and system health via CLI output
+- **Future Web Interface**: Optional React/Next.js UI to be added later
+
+## Data Models
+- **Agent**: Agent metadata, capabilities, current status, performance metrics
+- **Session**: Browser session information, status, resource usage
+- **Task**: Scraping task definition, target URL, category, priority
+- **Product**: Extracted product data with vendor and category information
+- **Vendor**: UK vendor information, site structure, scraping rules
+
+## APIs and Integrations (CLI-First)
+- **CLI Framework**: Python argparse for command-line interface and configuration
+- **CrewAI 0.150.0**: Latest agent orchestration framework with async tool execution and enhanced observability
+- **Browserbase API**: Primary scraping tool for cloud browser session management and web automation
+- **Browserbase Integration**: Direct integration with Browserbase for navigation, element interaction, and data extraction
+- **File Storage**: JSON files for results storage with optional CSV/Excel export
+- **Logging**: Python logging for progress tracking and debugging
+- **Anti-Bot Tools**: Browserbase's built-in anti-detection features with rotating user agents and proxy support
+- **Future Database**: PostgreSQL/MongoDB integration to be added with web interface
+- **Future Web Framework**: React/Next.js with FastAPI to be added later
+
+## Infrastructure Requirements
+- Cloud infrastructure for browser sessions and agent deployment
+- Container orchestration for scalable agent deployment
+- Database for product data and metadata storage
+- Message queue for task distribution and agent communication
+- Monitoring and logging infrastructure
+
+# Development Roadmap (CLI-First Approach)
+## Phase 1: CLI Foundation (MVP)
+- **CLI Application Setup**: Create Python command-line interface with argparse
+- **URL Input System**: Command-line arguments for multiple URLs with validation
+- **Basic Configuration**: CLI flags for vendor selection, scraping parameters, and Browserbase session options
+- **CrewAI 0.150.0 Integration**: Latest framework with async tool execution and enhanced observability
+- **Browserbase Integration**: Primary scraping tool integration with cloud browser session management
+- **Browserbase Agent Tools**: Create CrewAI tools that leverage Browserbase for navigation and data extraction
+- **File-Based Data Storage**: JSON file storage for results with automatic organization
+- **CLI Progress Monitoring**: Real-time progress output and status updates
+- **Results Management**: CLI commands to list, view, and export previous results
+
+## Phase 2: UK Vendor Integration
+- **Tesco Integration**: Implement Browserbase-based scraping strategies for Tesco's grocery platform
+- **Asda Integration**: Create vendor-specific data extraction rules for Asda's online store
+- **Costco Integration**: Develop scraping logic for Costco's UK wholesale platform
+- **Grocery-Specific Extraction**: Create specialized extraction rules for food items, household products, and electronics
+- **Store-Specific Navigation**: Implement category navigation for each vendor's unique site structure
+- **Pagination Support**: Add pagination and infinite scroll support using Browserbase's browser automation
+
+## Phase 3: Multi-Agent Optimization
+- **Async Agent Deployment**: Leverage CrewAI 0.150.0's async tool execution for concurrent Browserbase sessions
+- **Intelligent Load Balancing**: Distribute tasks based on agent capabilities and Browserbase session availability
+- **Vendor-Specific Agents**: Create specialized agents for Tesco, Asda, and Costco with unique scraping strategies
+- **Grocery Category Agents**: Deploy agents specialized in different product categories (fresh food, packaged goods, household)
+- **Enhanced Error Handling**: Implement retry mechanisms with CrewAI's improved observability and Browserbase session recovery
+- **Performance Analytics**: Monitor agent performance using CrewAI's MemoryEvents and Browserbase session metrics
+- **Browserbase Anti-Bot Features**: Leverage Browserbase's built-in anti-detection, rotating user agents, and proxy support
+
+## Phase 4: Advanced CLI Features
+- **Enhanced Results Display**: Rich CLI output with tables and formatting
+- **Advanced Data Validation**: Real-time data cleaning and quality checks
+- **Multiple Export Formats**: CLI export to JSON, CSV, Excel formats
+- **Agent Performance Analytics**: Detailed metrics and optimization insights via CLI
+- **Configuration Files**: Support for config files and saved scraping profiles
+- **Batch Processing**: Support for multiple scraping tasks in sequence
+
+## Phase 5: Web Interface Addition
+- **Web Application Setup**: Create React/Next.js frontend with TypeScript and Tailwind CSS
+- **Backend API Development**: Set up FastAPI server with REST endpoints and WebSocket support
+- **Web Dashboard**: Real-time monitoring of agents and progress via web interface
+- **Interactive Data Table**: Filter, sort, and preview scraped products in web UI
+- **Mobile Responsive Design**: Optimize UI for mobile and tablet devices
+- **API Integration**: Connect web interface to existing CLI functionality
+
+# Logical Dependency Chain (CLI-First)
+## Foundation First (Phase 1)
+1. **CLI Application Setup**: Python command-line interface with argparse
+2. **URL Input System**: Command-line arguments for multiple URLs with validation and parsing
+3. **CrewAI 0.150.0 Integration**: Latest framework with async tool execution and enhanced observability
+4. **Browserbase Integration**: Primary scraping tool with cloud browser session management
+5. **Browserbase Agent Tools**: Create CrewAI tools that leverage Browserbase for navigation and data extraction
+6. **File-Based Data Storage**: JSON file storage and retrieval system
+7. **CLI Progress Monitoring**: Real-time progress output and status updates
+8. **Results Management**: CLI commands to list, view, and export results
+
+## Quick MVP Path (CLI-First)
+1. **Single Agent CLI Scraping**: Get one agent working with Tesco grocery platform via CLI
+2. **Multi-Agent CLI Deployment**: Scale to multiple agents for Tesco, Asda, and Costco via CLI
+3. **Vendor Expansion**: Add support for all three UK vendors with specialized agents
+4. **Data Processing**: Implement comprehensive data extraction for grocery and household products
+5. **CLI Enhancement**: Add advanced CLI features and export options
+
+## Progressive Enhancement
+1. **Concurrent Processing**: Optimize for simultaneous scraping
+2. **Advanced Monitoring**: Add comprehensive tracking and analytics
+3. **Data Quality**: Implement validation and cleaning
+4. **Export Features**: Add multiple export formats and APIs
+
+# Risks and Mitigations  
+## Technical Challenges
+- **Anti-Bot Measures**: Implement rotating user agents, proxies, and delays
+- **Site Structure Changes**: Create flexible scraping rules and fallback strategies
+- **Rate Limiting**: Implement intelligent rate limiting and request spacing
+- **Data Quality**: Add comprehensive validation and cleaning processes
+
+## MVP Scope Management
+- **Vendor Complexity**: Start with Tesco, then add Asda and Costco with specialized agents
+- **Agent Coordination**: Begin with simple task distribution, add complexity later
+- **Data Volume**: Start with limited grocery categories, scale based on performance
+
+## Resource Constraints
+- **Browser Session Costs**: Optimize session usage and implement proper cleanup
+- **Computational Resources**: Use efficient data structures and processing
+- **Development Time**: Leverage existing open-source libraries and frameworks
+
+# Appendix  
+## Research Findings
+- CrewAI provides excellent agent orchestration capabilities
+- Browserbase offers reliable cloud browser automation
+- UK grocery sites (Tesco, Asda, Costco) have varying anti-bot measures
+- Product data structure varies significantly across grocery vendors
+- Grocery sites require specialized handling for fresh food, packaged goods, and household items
+
+## Technical Specifications (CLI-First)
+- **CLI Interface**: Python argparse for command-line interface and configuration
+- **Agent Framework**: CrewAI 0.150.0 with async tool execution and enhanced observability
+- **Primary Scraping Tool**: Browserbase for cloud browser sessions and web automation
+- **Browserbase Integration**: Direct integration with Browserbase API for navigation, element interaction, and data extraction
+- **Anti-Bot Features**: Browserbase's built-in anti-detection, rotating user agents, and proxy support
+- **Data Storage**: JSON files for results with optional CSV/Excel export
+- **Logging**: Python logging for progress tracking and debugging
+- **Deployment**: Direct Python script execution with virtual environment
+- **Target Vendors**: Tesco (https://www.tesco.com/), Asda (https://www.asda.com/), Costco (https://www.costco.com/)
+- **Data Formats**: JSON for primary storage, CSV/Excel for export, future SQL for web interface
+- **Monitoring**: CrewAI's MemoryEvents and Browserbase session metrics for observability
+- **Future Web Stack**: React/Next.js with FastAPI and WebSocket support to be added later
+</PRD> 
