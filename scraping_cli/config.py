@@ -28,20 +28,27 @@ class OutputFormat(Enum):
 class ScrapeConfig:
     """Configuration for scrape command."""
     vendor: Vendor
-    urls: List[str]
+    urls: Optional[List[str]] = None
+    url_file: Optional[str] = None
+    urls_from_stdin: bool = False
     category: Optional[str] = None
     output: Optional[str] = None
     format: OutputFormat = OutputFormat.JSON
     
     def __post_init__(self):
         """Validate configuration after initialization."""
-        if not self.urls:
-            raise ValueError("At least one URL must be provided")
+        # At least one URL input method must be provided
+        input_methods = sum([
+            1 if self.urls else 0,
+            1 if self.url_file else 0,
+            1 if self.urls_from_stdin else 0
+        ])
         
-        # Validate URLs (basic check)
-        for url in self.urls:
-            if not url.startswith(('http://', 'https://')):
-                raise ValueError(f"Invalid URL format: {url}")
+        if input_methods == 0:
+            raise ValueError("No URL input method specified. Use --urls, --url-file, or --urls-from-stdin")
+        
+        if input_methods > 1:
+            raise ValueError("Multiple URL input methods specified. Use only one of --urls, --url-file, or --urls-from-stdin")
 
 
 @dataclass
@@ -90,7 +97,9 @@ class ConfigurationManager:
             
             config = ScrapeConfig(
                 vendor=vendor,
-                urls=args.urls,
+                urls=getattr(args, 'urls', None),
+                url_file=getattr(args, 'url_file', None),
+                urls_from_stdin=getattr(args, 'urls_from_stdin', False),
                 category=args.category,
                 output=args.output,
                 format=format_enum

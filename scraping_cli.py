@@ -12,26 +12,50 @@ from typing import List, Optional
 from scraping_cli.parser import create_parser
 from scraping_cli.config import create_config_manager
 from scraping_cli.logging_config import create_logging_manager
+from scraping_cli.url_input import create_url_input_handler
+from scraping_cli.url_processor import create_url_processor
 
 
 def handle_scrape_command(args, config_manager, logging_manager) -> None:
     """Handle the scrape command."""
     try:
+        # Create URL input handler and processor
+        url_input_handler = create_url_input_handler()
+        url_processor = create_url_processor()
+        
+        # Get URLs from input method
+        raw_urls = url_input_handler.validate_url_input(args)
+        input_method = url_input_handler.get_input_method_description(args)
+        
+        # Process and validate URLs
+        processed_urls = url_processor.process_urls(raw_urls, expected_vendor=args.vendor)
+        
+        # Remove duplicates
+        unique_urls = url_processor.deduplicate_urls(processed_urls)
+        
         # Parse configuration
         scrape_config = config_manager.parse_scrape_config(args)
         
-        # Log command start
+        # Log command start with URL information
         logging_manager.log_command_start(
             "scrape",
             vendor=scrape_config.vendor.value,
-            urls=scrape_config.urls,
+            input_method=input_method,
+            total_urls=len(raw_urls),
+            unique_urls=len(unique_urls),
             category=scrape_config.category,
             output=scrape_config.output,
             format=scrape_config.format.value
         )
         
+        # Log URL processing results
+        logging_manager.log_debug(f"Input method: {input_method}")
+        logging_manager.log_debug(f"Raw URLs: {len(raw_urls)}")
+        logging_manager.log_debug(f"Unique URLs: {len(unique_urls)}")
+        
         # TODO: Implement actual scraping logic
-        print(f"Scraping {scrape_config.vendor.value} from {len(scrape_config.urls)} URL(s)...")
+        print(f"Scraping {scrape_config.vendor.value} from {len(unique_urls)} URL(s)...")
+        print(f"Input method: {input_method}")
         print("This is a placeholder - actual scraping logic will be implemented in later tasks")
         
         # Log command end
@@ -39,6 +63,12 @@ def handle_scrape_command(args, config_manager, logging_manager) -> None:
         
     except ValueError as e:
         logging_manager.log_error(e, "Configuration error")
+        sys.exit(1)
+    except FileNotFoundError as e:
+        logging_manager.log_error(e, "File not found")
+        sys.exit(1)
+    except Exception as e:
+        logging_manager.log_error(e, "URL processing error")
         sys.exit(1)
 
 

@@ -59,11 +59,21 @@ Examples:
             choices=['tesco', 'asda', 'costco'],
             help='Target vendor platform'
         )
-        scrape_parser.add_argument(
+        # URL input group - only one method should be used
+        url_group = scrape_parser.add_mutually_exclusive_group(required=True)
+        url_group.add_argument(
             '--urls', '-u',
             nargs='+',
-            required=True,
             help='URLs to scrape (space-separated)'
+        )
+        url_group.add_argument(
+            '--url-file', '-F',
+            help='File containing URLs (one per line)'
+        )
+        url_group.add_argument(
+            '--urls-from-stdin',
+            action='store_true',
+            help='Read URLs from standard input (one per line)'
         )
         scrape_parser.add_argument(
             '--category', '-c',

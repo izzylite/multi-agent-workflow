@@ -1,6 +1,9 @@
 # Core dependencies
 argparse>=1.4.0
 
+# URL validation
+validators>=0.20.0
+
 # For future CrewAI integration
 crewai>=0.150.0
 
@@ -30,6 +33,9 @@ pyyaml>=6.0.0
 # For testing
 pytest>=7.0.0
 pytest-asyncio>=0.21.0
+pytest-mock>=3.10.0
+pytest-cov>=4.0.0
+pytest-xdist>=3.0.0
 
 # For development
 black>=23.0.0
