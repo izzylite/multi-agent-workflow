@@ -167,9 +167,9 @@ class ResultsManager:
             potential_category = parts[-2]
             
             # Simple heuristic: if these look like vendor/category names
-            if potential_vendor.lower() in ['tesco', 'asda', 'costco']:
+            if str(potential_vendor).lower() in ['tesco', 'asda', 'costco']:
                 vendor = potential_vendor
-            if potential_category.lower() in ['groceries', 'electronics', 'clothing', 'home']:
+            if str(potential_category).lower() in ['groceries', 'electronics', 'clothing', 'home']:
                 category = potential_category
         
         return {
@@ -426,9 +426,9 @@ class ResultsManager:
                         potential_category = parts[-2]
                         
                         # Simple heuristic: if these look like vendor/category names
-                        if potential_vendor.lower() in ['tesco', 'asda', 'costco']:
+                        if str(potential_vendor).lower() in ['tesco', 'asda', 'costco']:
                             vendor = potential_vendor
-                        if potential_category.lower() in ['groceries', 'electronics', 'clothing', 'home']:
+                        if str(potential_category).lower() in ['groceries', 'electronics', 'clothing', 'home']:
                             category = potential_category
                     
                     # Count products (load file to get count)
@@ -464,10 +464,10 @@ class ResultsManager:
         filtered = results
         
         if vendor:
-            filtered = [r for r in filtered if r.vendor.lower() == vendor.lower()]
+            filtered = [r for r in filtered if str(r.vendor).lower() == str(vendor).lower()]
         
         if category:
-            filtered = [r for r in filtered if r.category.lower() == category.lower()]
+            filtered = [r for r in filtered if str(r.category).lower() == str(category).lower()]
         
         if date_from:
             filtered = [r for r in filtered if r.created_at >= date_from]

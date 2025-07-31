@@ -127,7 +127,7 @@ class ProgressMonitor:
     
     def _get_status_color(self, status: str) -> str:
         """Get color for status text."""
-        status_lower = status.lower()
+        status_lower = str(status).lower()
         if 'error' in status_lower or 'failed' in status_lower:
             return Fore.RED
         elif 'warning' in status_lower:
@@ -186,14 +186,14 @@ class ProgressMonitor:
             # Add agent status if available
             if self.stats.agent_status:
                 active_agents = [k for k, v in self.stats.agent_status.items() 
-                               if 'working' in v.lower() or 'running' in v.lower()]
+                               if 'working' in str(v).lower() or 'running' in str(v).lower()]
                 if active_agents:
                     postfix['agents'] = f"{len(active_agents)} active"
             
             # Add browser session status
             if self.stats.browser_sessions:
                 active_sessions = [k for k, v in self.stats.browser_sessions.items() 
-                                 if 'active' in v.lower()]
+                                 if 'active' in str(v).lower()]
                 if active_sessions:
                     postfix['sessions'] = f"{len(active_sessions)} active"
             
@@ -242,7 +242,7 @@ class ProgressMonitor:
         """Set status for a specific agent."""
         self.stats.agent_status[agent_name] = status
         self.log(f"Agent '{agent_name}': {status}", 
-                StatusLevel.INFO if 'working' in status.lower() else StatusLevel.WARNING)
+                StatusLevel.INFO if 'working' in str(status).lower() else StatusLevel.WARNING)
         self._update_bars()
     
     def set_browser_session_status(self, session_id: str, status: str) -> None:
@@ -375,7 +375,7 @@ def create_progress_monitor(total_tasks: int = 0,
         ProgressMonitor instance
     """
     try:
-        display_mode = DisplayMode(mode.lower())
+        display_mode = DisplayMode(str(mode).lower())
     except ValueError:
         display_mode = DisplayMode.SIMPLE
     

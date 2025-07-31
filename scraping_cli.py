@@ -19,9 +19,13 @@ from scraping_cli.url_input import create_url_input_handler
 from scraping_cli.url_processor import create_url_processor
 from scraping_cli.progress_monitor import create_progress_monitor, StatusLevel
 from scraping_cli.results_manager import create_results_manager, ExportFormat, SortOrder
+from scraping_cli.agent_deployer import create_agent_deployer, ConcurrencyConfig, ScalingConfig
+from scraping_cli.browserbase_manager import create_browserbase_manager
+from scraping_cli.crewai_integration import TaskType
+import asyncio
 
 
-def handle_scrape_command(args, config_manager, logging_manager) -> None:
+async def handle_scrape_command(args, config_manager, logging_manager) -> None:
     """Handle the scrape command."""
     try:
         # Create URL input handler and processor
@@ -72,23 +76,91 @@ def handle_scrape_command(args, config_manager, logging_manager) -> None:
             progress_monitor.log(f"Processing {len(unique_urls)} unique URLs", StatusLevel.INFO)
             progress_monitor.log(f"Input method: {input_method}", StatusLevel.INFO)
             
-            # TODO: Implement actual scraping logic with progress updates
-            # For now, simulate progress
-            for i, url in enumerate(unique_urls):
-                progress_monitor.update_progress(
-                    n=1,
-                    task_name=f"Scraping URL {i+1}/{len(unique_urls)}",
-                    agent_status={"scraper": "working"},
-                    browser_status={f"session_{i}": "active"}
-                )
+            # Initialize Browserbase manager and agent deployer
+            browserbase_manager = create_browserbase_manager()
+            
+            # Configure concurrency and scaling
+            concurrency_config = ConcurrencyConfig(
+                max_agents_per_vendor=2,
+                max_total_agents=5,
+                max_concurrent_sessions=3,
+                rate_limit_per_domain=1.0
+            )
+            
+            scaling_config = ScalingConfig(
+                enable_auto_scaling=True,
+                min_agents=1,
+                max_agents=10
+            )
+            
+            # Create agent deployer
+            agent_deployer = create_agent_deployer(
+                browserbase_manager=browserbase_manager,
+                concurrency_config=concurrency_config,
+                scaling_config=scaling_config
+            )
+            
+            # Start the agent deployer
+            await agent_deployer.start()
+            
+            try:
+                # Add scraping tasks for each URL
+                task_ids = []
+                for i, url in enumerate(unique_urls):
+                    progress_monitor.update_progress(
+                        n=1,
+                        task_name=f"Adding task for URL {i+1}/{len(unique_urls)}",
+                        agent_status={"deployer": "adding_task"},
+                        browser_status={}
+                    )
+                    
+                    # Add task to deployer
+                    task_id = await agent_deployer.add_task(
+                        vendor=scrape_config.vendor.value,
+                        task_type=TaskType.SCRAPE_PRODUCTS,
+                        task_data={
+                            "url": url.normalized if hasattr(url, 'normalized') else str(url),
+                            "category": scrape_config.category,
+                            "output_format": scrape_config.format.value,
+                            "output_path": scrape_config.output
+                        }
+                    )
+                    task_ids.append(task_id)
+                    
+                    progress_monitor.log(f"Added task {task_id} for URL: {url}", StatusLevel.INFO)
                 
-                # Simulate some processing time
-                import time
-                time.sleep(0.1)
+                # Monitor task progress
+                completed_tasks = 0
+                while completed_tasks < len(task_ids):
+                    for task_id in task_ids:
+                        if task_id not in [t.task_id for t in agent_deployer.completed_tasks]:
+                            # Check if task is still running
+                            status = await agent_deployer.get_task_status(task_id)
+                            if status and status.get('status') == 'completed':
+                                completed_tasks += 1
+                                progress_monitor.update_progress(
+                                    n=1,
+                                    task_name=f"Completed task {task_id}",
+                                    agent_status={"scraper": "completed"},
+                                    browser_status={}
+                                )
+                    
+                    # Update progress monitor with current status
+                    deployer_status = agent_deployer.get_status()
+                    progress_monitor.update_progress(
+                        n=0,  # Don't increment, just update status
+                        task_name=f"Running: {deployer_status.get('active_agents', 0)} agents, {deployer_status.get('running_tasks', 0)} tasks",
+                        agent_status={"deployer": "running"},
+                        browser_status={"sessions": deployer_status.get('active_sessions', 0)}
+                    )
+                    
+                    await asyncio.sleep(1)  # Check every second
                 
-                # Simulate occasional errors
-                if i == 2:  # Simulate error on 3rd URL
-                    progress_monitor.add_error(f"Failed to scrape URL {i+1}: Network timeout")
+                progress_monitor.log("All scraping tasks completed", StatusLevel.SUCCESS)
+                
+            finally:
+                # Stop the agent deployer
+                await agent_deployer.stop()
             
             progress_monitor.log("Scraping completed", StatusLevel.SUCCESS)
         
@@ -441,7 +513,7 @@ def main() -> int:
         
         # Route to appropriate command handler
         if args.command == 'scrape':
-            handle_scrape_command(args, config_manager, logging_manager)
+            asyncio.run(handle_scrape_command(args, config_manager, logging_manager))
         elif args.command == 'list':
             handle_list_command(args, config_manager, logging_manager)
         elif args.command == 'export':

@@ -85,7 +85,7 @@ class VendorTool(BrowserbaseTool):
     def _convert_to_product_data(self, product_dict: Dict[str, Any], category: str) -> ProductData:
         """Convert scraped product dictionary to ProductData object."""
         return ProductData(
-            vendor=self.vendor_config.name.lower(),
+            vendor=str(self.vendor_config.name).lower(),
             category=category,
             product_id=product_dict.get('product_id', ''),
             title=product_dict.get('title', ''),
@@ -112,7 +112,7 @@ class VendorTool(BrowserbaseTool):
             # Save to storage
             file_path = self.storage_manager.save_products(
                 product_data_list,
-                self.vendor_config.name.lower(),
+                str(self.vendor_config.name).lower(),
                 category
             )
             
@@ -215,7 +215,7 @@ class TescoTool(VendorTool):
             )
             
             # Find and click the specific category
-            category_selector = f"a[href*='{category_name.lower()}'], a:contains('{category_name}')"
+            category_selector = f"a[href*='{str(category_name).lower()}'], a:contains('{category_name}')"
             await self._retry_operation(
                 self.browser_operations.click,
                 selector=category_selector,
@@ -472,7 +472,7 @@ class AsdaTool(VendorTool):
             
             # Strategy 1: Direct URL navigation
             try:
-                category_url = f"{self.vendor_config.base_url}/category/{category_name.lower().replace(' ', '-')}"
+                category_url = f"{self.vendor_config.base_url}/category/{str(category_name).lower().replace(' ', '-')}"
                 await self._retry_operation(
                     self.browser_operations.navigate,
                     url=category_url,
@@ -492,7 +492,7 @@ class AsdaTool(VendorTool):
             # Strategy 2: Breadcrumb navigation
             if not navigation_successful:
                 try:
-                    category_selector = f"a[href*='{category_name.lower()}'], a:contains('{category_name}')"
+                    category_selector = f"a[href*='{str(category_name).lower()}'], a:contains('{category_name}')"
                     await self._retry_operation(
                         self.browser_operations.click,
                         selector=category_selector,
@@ -514,7 +514,7 @@ class AsdaTool(VendorTool):
                 try:
                     # Look for category in main menu
                     menu_selectors = [
-                        f"a[href*='{category_name.lower()}']",
+                        f"a[href*='{str(category_name).lower()}']",
                         f".menu-item a:contains('{category_name}')",
                         f"[data-testid='menu-item'] a:contains('{category_name}')"
                     ]
@@ -1759,7 +1759,7 @@ class CostcoTool(VendorTool):
             
             # Strategy 1: Direct URL navigation
             try:
-                category_url = f"{self.vendor_config.base_url}/category/{category_name.lower().replace(' ', '-')}"
+                category_url = f"{self.vendor_config.base_url}/category/{str(category_name).lower().replace(' ', '-')}"
                 await self._retry_operation(
                     self.browser_operations.navigate,
                     url=category_url,
@@ -1795,9 +1795,9 @@ class CostcoTool(VendorTool):
                 # Try multiple category selectors
                 category_found = False
                 for category_selector in [
-                    f"a[href*='{category_name.lower()}']",
+                    f"a[href*='{str(category_name).lower()}']",
                     f"a:contains('{category_name}')",
-                    f"a[href*='{category_name.lower().replace(' ', '-')}']",
+                    f"a[href*='{str(category_name).lower().replace(' ', '-')}']",
                     f".category-menu a:contains('{category_name}')",
                     f".department-menu a:contains('{category_name}')"
                 ]:

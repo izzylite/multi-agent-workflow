@@ -87,6 +87,7 @@ class AgentTaskInfo:
     session_id: Optional[str] = None
     retry_count: int = 0
     max_retries: int = 3
+    task_data: Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -1383,21 +1384,24 @@ class AgentDeployer:
         Returns:
             ScrapingTask instance
         """
+        # Get task data from the task info
+        task_data = getattr(task_info, 'task_data', {}) or {}
+        
         # Create task using factory based on task type
         if task_info.task_type == TaskType.SCRAPE_PRODUCTS:
-            # For now, create a generic product scraping task
-            # In a real implementation, this would use specific URLs
-            urls = [f"https://{task_info.vendor}.com/products"]  # Placeholder
+            # Use actual URL from task data
+            url = task_data.get('url', f"https://{task_info.vendor}.com/products")
+            urls = [url] if isinstance(url, str) else url if isinstance(url, list) else [str(url)]
             scraping_task = self.task_factory.create_scrape_products_task(
                 agent.get_agent(), urls, task_info.vendor
             )
         elif task_info.task_type == TaskType.ANALYZE_DATA:
             scraping_task = self.task_factory.create_analyze_data_task(
-                agent.get_agent(), {}  # Placeholder data
+                agent.get_agent(), task_data
             )
         elif task_info.task_type == TaskType.VALIDATE_RESULTS:
             scraping_task = self.task_factory.create_validate_results_task(
-                agent.get_agent(), {}  # Placeholder results
+                agent.get_agent(), task_data
             )
         else:
             # Create a generic task for coordination
@@ -1489,6 +1493,10 @@ class AgentDeployer:
             status=AgentTaskStatus.PENDING,
             created_at=datetime.now()
         )
+        
+        # Store task data if provided
+        if task_data:
+            task_info.task_data = task_data
         
         self.pending_tasks.append(task_info)
         self.agent_tasks[task_id] = task_info

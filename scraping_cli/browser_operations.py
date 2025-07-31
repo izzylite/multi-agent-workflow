@@ -207,9 +207,9 @@ class BrowserOperations:
             self._update_stats(False, duration)
             
             error_msg = str(e)
-            if "timeout" in error_msg.lower():
+            if "timeout" in str(error_msg).lower():
                 raise TimeoutError(f"Navigation timeout: {error_msg}", timeout_duration=timeout, operation="navigation")
-            elif "net::" in error_msg.lower():
+            elif "net::" in str(error_msg).lower():
                 raise NavigationError(f"Network error during navigation: {error_msg}", url=url)
             else:
                 raise NavigationError(f"Navigation failed: {error_msg}", url=url)

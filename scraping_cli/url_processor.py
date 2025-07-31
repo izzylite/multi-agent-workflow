@@ -82,7 +82,7 @@ class URLValidator:
             query_params = parse_qs(parsed.query)
             cleaned_params = {
                 k: v for k, v in query_params.items() 
-                if k.lower() not in self.tracking_params
+                if str(k).lower() not in self.tracking_params
             }
             
             # Rebuild query string

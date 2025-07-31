@@ -583,7 +583,7 @@ class CostcoAgent(ScrapingAgent):
                     membership_element = await self.costco_tool.browser_operations.find_element(selector)
                     if membership_element:
                         membership_text = await self.costco_tool.browser_operations.get_text(selector)
-                        product.membership_required = "membership" in membership_text.lower()
+                        product.membership_required = "membership" in str(membership_text).lower()
                         break
                 except:
                     continue

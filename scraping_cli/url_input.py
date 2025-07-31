@@ -44,7 +44,7 @@ class URLInputHandler:
             raise ValueError(f"Path is not a file: {file_path}")
         
         # Check file extension
-        if path.suffix.lower() not in self.supported_extensions:
+        if str(path.suffix).lower() not in self.supported_extensions:
             print(f"Warning: File extension '{path.suffix}' is not in supported extensions: {self.supported_extensions}")
         
         # Read URLs from file

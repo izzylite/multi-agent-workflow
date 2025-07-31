@@ -32,6 +32,35 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
+## Configuration
+
+### Browserbase Setup
+
+This project uses Browserbase for cloud browser automation. You'll need to set up your credentials:
+
+1. **Get Browserbase credentials**: Sign up at [browserbase.com](https://browserbase.com) and get your API key and project ID
+
+2. **Create environment file**: You can either:
+   
+   **Option A**: Use the interactive setup script:
+   ```bash
+   python scripts/setup_env.py
+   ```
+   
+   **Option B**: Copy the example file and edit manually:
+   ```bash
+   cp env.example .env
+   # Then edit .env with your credentials
+   ```
+
+4. **Optional settings**: You can also configure:
+   ```bash
+   BROWSERBASE_MAX_SESSIONS=10  # Maximum concurrent sessions
+   BROWSERBASE_BASE_URL=https://api.browserbase.com  # API endpoint
+   ```
+
+**Note**: The `.env` file is automatically ignored by git for security. Never commit your actual API keys to version control.
+
 ## Usage
 
 ### Basic Commands

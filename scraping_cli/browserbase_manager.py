@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 from contextlib import contextmanager
 
 from enum import Enum
+from dotenv import load_dotenv
 
 from browserbase import Browserbase
 from browserbase.types.session_create_params import BrowserSettings
@@ -26,6 +27,9 @@ from .exceptions import (
     classify_error, is_retryable_error, get_error_severity
 )
 from .health_monitor import SessionHealthMonitor, HealthConfig, create_health_monitor
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 class SessionStatus(Enum):
