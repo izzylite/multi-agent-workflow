@@ -36,30 +36,36 @@ class TestCredentialValidation:
     
     def test_manager_initialization_with_explicit_none(self):
         """Test that manager raises error when credentials are explicitly None."""
-        with pytest.raises(ConfigurationError, match="Browserbase API key is required"):
-            BrowserbaseManager(api_key=None, project_id=None)
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(ConfigurationError, match="Browserbase API key is required"):
+                BrowserbaseManager(api_key=None, project_id=None)
     
     def test_manager_initialization_with_explicit_none_api_key(self):
         """Test that manager raises error when API key is explicitly None."""
-        with pytest.raises(ConfigurationError, match="Browserbase API key is required"):
-            BrowserbaseManager(api_key=None, project_id="test-project")
+        with patch.dict(os.environ, {'BROWSERBASE_PROJECT_ID': 'test-project'}, clear=True):
+            with pytest.raises(ConfigurationError, match="Browserbase API key is required"):
+                BrowserbaseManager(api_key=None, project_id="test-project")
     
     def test_manager_initialization_with_explicit_none_project_id(self):
         """Test that manager raises error when project ID is explicitly None."""
-        with pytest.raises(ConfigurationError, match="Browserbase project ID is required"):
-            BrowserbaseManager(api_key="test-key", project_id=None)
+        with patch.dict(os.environ, {'BROWSERBASE_API_KEY': 'test-key'}, clear=True):
+            with pytest.raises(ConfigurationError, match="Browserbase project ID is required"):
+                BrowserbaseManager(api_key="test-key", project_id=None)
     
     def test_manager_initialization_with_empty_strings(self):
         """Test that manager raises error when credentials are empty strings."""
-        with pytest.raises(ConfigurationError, match="Browserbase API key is required"):
-            BrowserbaseManager(api_key="", project_id="")
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(ConfigurationError, match="Browserbase API key is required"):
+                BrowserbaseManager(api_key="", project_id="")
     
     def test_manager_initialization_with_empty_api_key(self):
         """Test that manager raises error when API key is empty string."""
-        with pytest.raises(ConfigurationError, match="Browserbase API key is required"):
-            BrowserbaseManager(api_key="", project_id="test-project")
+        with patch.dict(os.environ, {'BROWSERBASE_PROJECT_ID': 'test-project'}, clear=True):
+            with pytest.raises(ConfigurationError, match="Browserbase API key is required"):
+                BrowserbaseManager(api_key="", project_id="test-project")
     
     def test_manager_initialization_with_empty_project_id(self):
         """Test that manager raises error when project ID is empty string."""
-        with pytest.raises(ConfigurationError, match="Browserbase project ID is required"):
-            BrowserbaseManager(api_key="test-key", project_id="") 
+        with patch.dict(os.environ, {'BROWSERBASE_API_KEY': 'test-key'}, clear=True):
+            with pytest.raises(ConfigurationError, match="Browserbase project ID is required"):
+                BrowserbaseManager(api_key="test-key", project_id="") 

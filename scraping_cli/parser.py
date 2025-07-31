@@ -44,6 +44,9 @@ Examples:
         self._add_scrape_parser(subparsers)
         self._add_list_parser(subparsers)
         self._add_export_parser(subparsers)
+        self._add_view_parser(subparsers)
+        self._add_delete_parser(subparsers)
+        self._add_stats_parser(subparsers)
         
         return parser
     
@@ -102,6 +105,56 @@ Examples:
             default='table',
             help='Output format (default: table)'
         )
+        list_parser.add_argument(
+            '--vendor', '-V',
+            help='Filter by vendor'
+        )
+        list_parser.add_argument(
+            '--category', '-c',
+            help='Filter by category'
+        )
+        list_parser.add_argument(
+            '--date-from',
+            help='Filter by start date (YYYY-MM-DD)'
+        )
+        list_parser.add_argument(
+            '--date-to',
+            help='Filter by end date (YYYY-MM-DD)'
+        )
+        list_parser.add_argument(
+            '--min-products',
+            type=int,
+            help='Minimum product count'
+        )
+        list_parser.add_argument(
+            '--max-products',
+            type=int,
+            help='Maximum product count'
+        )
+        list_parser.add_argument(
+            '--sort-by',
+            choices=['vendor', 'category', 'product_count', 'created_at', 'file_size'],
+            default='created_at',
+            help='Sort by field (default: created_at)'
+        )
+        list_parser.add_argument(
+            '--sort-order',
+            choices=['asc', 'desc'],
+            default='desc',
+            help='Sort order (default: desc)'
+        )
+        list_parser.add_argument(
+            '--page', '-p',
+            type=int,
+            default=1,
+            help='Page number (default: 1)'
+        )
+        list_parser.add_argument(
+            '--per-page',
+            type=int,
+            default=20,
+            help='Results per page (default: 20)'
+        )
     
     def _add_export_parser(self, subparsers: argparse._SubParsersAction) -> None:
         """Add the export command parser."""
@@ -110,15 +163,69 @@ Examples:
             help='Export results to file'
         )
         export_parser.add_argument(
+            'file_path',
+            help='Path to the result file to export'
+        )
+        export_parser.add_argument(
             '--output', '-o',
             required=True,
             help='Output file path'
         )
         export_parser.add_argument(
             '--format', '-f',
-            choices=['json', 'csv'],
+            choices=['json', 'csv', 'excel'],
             default='json',
             help='Output format (default: json)'
+        )
+        export_parser.add_argument(
+            '--fields',
+            nargs='+',
+            help='Specific fields to export (default: all)'
+        )
+    
+    def _add_view_parser(self, subparsers: argparse._SubParsersAction) -> None:
+        """Add the view command parser."""
+        view_parser = subparsers.add_parser(
+            'view',
+            help='View detailed information about a specific result'
+        )
+        view_parser.add_argument(
+            'file_path',
+            help='Path to the result file to view'
+        )
+        view_parser.add_argument(
+            '--fields', '-f',
+            nargs='+',
+            help='Specific fields to display (default: all)'
+        )
+    
+    def _add_delete_parser(self, subparsers: argparse._SubParsersAction) -> None:
+        """Add the delete command parser."""
+        delete_parser = subparsers.add_parser(
+            'delete',
+            help='Delete old or unwanted results'
+        )
+        delete_parser.add_argument(
+            'file_path',
+            help='Path to the result file to delete'
+        )
+        delete_parser.add_argument(
+            '--confirm', '-y',
+            action='store_true',
+            help='Skip confirmation prompt'
+        )
+    
+    def _add_stats_parser(self, subparsers: argparse._SubParsersAction) -> None:
+        """Add the stats command parser."""
+        stats_parser = subparsers.add_parser(
+            'stats',
+            help='Show statistics about stored results'
+        )
+        stats_parser.add_argument(
+            '--format', '-f',
+            choices=['table', 'json'],
+            default='table',
+            help='Output format (default: table)'
         )
     
     def parse_args(self, args: Optional[List[str]] = None) -> argparse.Namespace:

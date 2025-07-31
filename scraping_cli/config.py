@@ -70,6 +70,36 @@ class ExportConfig:
 
 
 @dataclass
+class ViewConfig:
+    """Configuration for view command."""
+    file_path: str
+    fields: Optional[List[str]] = None
+    
+    def __post_init__(self):
+        """Validate configuration after initialization."""
+        if not self.file_path:
+            raise ValueError("File path must be provided")
+
+
+@dataclass
+class DeleteConfig:
+    """Configuration for delete command."""
+    file_path: str
+    confirm: bool = False
+    
+    def __post_init__(self):
+        """Validate configuration after initialization."""
+        if not self.file_path:
+            raise ValueError("File path must be provided")
+
+
+@dataclass
+class StatsConfig:
+    """Configuration for stats command."""
+    format: OutputFormat = OutputFormat.TABLE
+
+
+@dataclass
 class GlobalConfig:
     """Global configuration for the CLI application."""
     verbose: bool = False
@@ -88,6 +118,9 @@ class ConfigurationManager:
         self.scrape_config: Optional[ScrapeConfig] = None
         self.list_config: Optional[ListConfig] = None
         self.export_config: Optional[ExportConfig] = None
+        self.view_config: Optional[ViewConfig] = None
+        self.delete_config: Optional[DeleteConfig] = None
+        self.stats_config: Optional[StatsConfig] = None
     
     def parse_scrape_config(self, args) -> ScrapeConfig:
         """Parse scrape command configuration from arguments."""
@@ -138,6 +171,49 @@ class ConfigurationManager:
             
         except ValueError as e:
             raise ValueError(f"Invalid export configuration: {e}")
+    
+    def parse_view_config(self, args) -> ViewConfig:
+        """Parse view command configuration from arguments."""
+        try:
+            config = ViewConfig(
+                file_path=args.file_path,
+                fields=getattr(args, 'fields', None)
+            )
+            
+            self.view_config = config
+            return config
+            
+        except ValueError as e:
+            raise ValueError(f"Invalid view configuration: {e}")
+    
+    def parse_delete_config(self, args) -> DeleteConfig:
+        """Parse delete command configuration from arguments."""
+        try:
+            config = DeleteConfig(
+                file_path=args.file_path,
+                confirm=getattr(args, 'confirm', False)
+            )
+            
+            self.delete_config = config
+            return config
+            
+        except ValueError as e:
+            raise ValueError(f"Invalid delete configuration: {e}")
+    
+    def parse_stats_config(self, args) -> StatsConfig:
+        """Parse stats command configuration from arguments."""
+        try:
+            format_enum = OutputFormat(args.format)
+            
+            config = StatsConfig(
+                format=format_enum
+            )
+            
+            self.stats_config = config
+            return config
+            
+        except ValueError as e:
+            raise ValueError(f"Invalid stats configuration: {e}")
     
     def parse_global_config(self, args) -> GlobalConfig:
         """Parse global configuration from arguments."""

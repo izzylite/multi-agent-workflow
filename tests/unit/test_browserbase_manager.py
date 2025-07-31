@@ -595,7 +595,8 @@ class TestCreateBrowserbaseManager:
                 project_id="custom-project",
                 pool_size=10,
                 max_retries=5,
-                session_timeout=600
+                session_timeout=600,
+                max_concurrent_sessions=None
             )
             assert manager == mock_manager
     
@@ -612,6 +613,7 @@ class TestCreateBrowserbaseManager:
                 project_id=None,
                 pool_size=5,
                 max_retries=3,
-                session_timeout=300
+                session_timeout=300,
+                max_concurrent_sessions=None
             )
             assert manager == mock_manager 
