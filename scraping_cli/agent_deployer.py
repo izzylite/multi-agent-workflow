@@ -200,6 +200,10 @@ class AgentDeployer:
         self.concurrency_config = concurrency_config or ConcurrencyConfig()
         self.scaling_config = scaling_config or ScalingConfig()
         
+        # Register browser manager globally for tools
+        from .browser_tools import browser_registry
+        browser_registry.register_manager(browserbase_manager)
+        
         # Deployment state
         self.status = DeploymentStatus.INITIALIZING
         self.start_time: Optional[datetime] = None
@@ -1348,19 +1352,19 @@ class AgentDeployer:
         # Create browser tools with manager and anti-bot config
         tools = [
             NavigationTool(
-                browserbase_manager=self.browserbase_manager,
+                self.browserbase_manager,
                 anti_bot_config=anti_bot_config
             ),
             InteractionTool(
-                browserbase_manager=self.browserbase_manager,
+                self.browserbase_manager,
                 anti_bot_config=anti_bot_config
             ),
             ExtractionTool(
-                browserbase_manager=self.browserbase_manager,
+                self.browserbase_manager,
                 anti_bot_config=anti_bot_config
             ),
             ScreenshotTool(
-                browserbase_manager=self.browserbase_manager,
+                self.browserbase_manager,
                 anti_bot_config=anti_bot_config
             )
         ]

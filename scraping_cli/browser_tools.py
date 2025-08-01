@@ -11,6 +11,7 @@ import logging
 import time
 import hashlib
 import json
+import threading
 from typing import List, Optional, Dict, Any, Union, Type, Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -26,6 +27,47 @@ from .exceptions import (
     ElementNotFoundError, ElementInteractionError, ScreenshotError,
     TimeoutError, classify_error, is_retryable_error, get_error_severity
 )
+
+
+# Global registry for browser managers to solve CrewAI serialization issues
+class BrowserManagerRegistry:
+    """Global registry for browser managers to avoid Pydantic serialization issues."""
+    
+    _lock = threading.Lock()
+    _managers: Dict[str, BrowserbaseManager] = {}
+    _default_manager: Optional[BrowserbaseManager] = None
+    
+    @classmethod
+    def register_manager(cls, manager: BrowserbaseManager, name: str = "default") -> str:
+        """Register a browser manager with the registry."""
+        with cls._lock:
+            cls._managers[name] = manager
+            if name == "default":
+                cls._default_manager = manager
+            return name
+    
+    @classmethod
+    def get_manager(cls, name: str = "default") -> Optional[BrowserbaseManager]:
+        """Get a browser manager from the registry."""
+        with cls._lock:
+            return cls._managers.get(name)
+    
+    @classmethod
+    def get_default_manager(cls) -> Optional[BrowserbaseManager]:
+        """Get the default browser manager."""
+        with cls._lock:
+            return cls._default_manager
+    
+    @classmethod
+    def clear(cls):
+        """Clear all registered managers."""
+        with cls._lock:
+            cls._managers.clear()
+            cls._default_manager = None
+
+
+# Global instance
+browser_registry = BrowserManagerRegistry()
 
 
 class ToolResultStatus(Enum):
@@ -124,26 +166,18 @@ class BrowserbaseTool(BaseTool):
             cache_ttl: Cache time-to-live in seconds
             **kwargs: Additional arguments passed to BaseTool
         """
-        super().__init__(**kwargs)
-        
-        self.browser_manager = browser_manager
-        self.browser_operations: Optional[BrowserOperations] = None
-        self.current_session: Optional[SessionInfo] = None
-        
-        # Anti-bot configuration
-        self.anti_bot_config = anti_bot_config or AntiBotConfig()
-        
-        # Caching configuration
-        self.enable_caching = enable_caching
-        self.cache_ttl = cache_ttl
-        self._cache: Dict[str, ToolResult] = {}
-        self._cache_timestamps: Dict[str, datetime] = {}
-        
-        # Logging
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-        
-        # Statistics
-        self.stats = {
+        # Store the browser manager and other attributes as instance variables
+        # that are not Pydantic fields
+        self._browser_manager = browser_manager
+        self._browser_operations = None
+        self._current_session = None
+        self._anti_bot_config = anti_bot_config or AntiBotConfig()
+        self._enable_caching = enable_caching
+        self._cache_ttl = cache_ttl
+        self._cache_dict = {}
+        self._cache_timestamps_dict = {}
+        self._logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self._stats = {
             'total_operations': 0,
             'successful_operations': 0,
             'failed_operations': 0,
@@ -152,6 +186,105 @@ class BrowserbaseTool(BaseTool):
             'retry_attempts': 0,
             'total_duration': 0.0
         }
+        
+        super().__init__(**kwargs)
+    
+    @property
+    def browser_manager(self) -> BrowserbaseManager:
+        """Get the browser manager."""
+        # First try to get from instance
+        if hasattr(self, '_browser_manager') and self._browser_manager is not None:
+            return self._browser_manager
+        
+        # Fall back to global registry
+        manager = browser_registry.get_default_manager()
+        if manager is not None:
+            return manager
+            
+        raise RuntimeError("Browser manager not initialized. Tool was not properly created and no default manager registered.")
+    
+    @property
+    def browser_operations(self) -> Optional[BrowserOperations]:
+        """Get the browser operations."""
+        if not hasattr(self, '_browser_operations'):
+            self._browser_operations = None
+        return self._browser_operations
+    
+    @browser_operations.setter
+    def browser_operations(self, value: Optional[BrowserOperations]):
+        """Set the browser operations."""
+        self._browser_operations = value
+    
+    @property
+    def current_session(self) -> Optional[SessionInfo]:
+        """Get the current session."""
+        if not hasattr(self, '_current_session'):
+            self._current_session = None
+        return self._current_session
+    
+    @current_session.setter
+    def current_session(self, value: Optional[SessionInfo]):
+        """Set the current session."""
+        self._current_session = value
+    
+    @property
+    def anti_bot_config(self) -> AntiBotConfig:
+        """Get the anti-bot configuration."""
+        if not hasattr(self, '_anti_bot_config'):
+            self._anti_bot_config = AntiBotConfig()
+        return self._anti_bot_config
+    
+    @property
+    def enable_caching(self) -> bool:
+        """Get the caching setting."""
+        return self._enable_caching
+    
+    @property
+    def cache_ttl(self) -> int:
+        """Get the cache TTL."""
+        return self._cache_ttl
+    
+    @property
+    def _cache(self) -> Dict[str, ToolResult]:
+        """Get the cache."""
+        return self._cache_dict
+    
+    @_cache.setter
+    def _cache(self, value: Dict[str, ToolResult]):
+        """Set the cache."""
+        self._cache_dict = value
+    
+    @property
+    def _cache_timestamps(self) -> Dict[str, datetime]:
+        """Get the cache timestamps."""
+        return self._cache_timestamps_dict
+    
+    @_cache_timestamps.setter
+    def _cache_timestamps(self, value: Dict[str, datetime]):
+        """Set the cache timestamps."""
+        self._cache_timestamps_dict = value
+    
+    @property
+    def logger(self) -> logging.Logger:
+        """Get the logger."""
+        if not hasattr(self, '_logger'):
+            self._logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        return self._logger
+    
+    @property
+    def stats(self) -> Dict[str, Any]:
+        """Get the stats."""
+        if not hasattr(self, '_stats'):
+            self._stats = {
+                'total_operations': 0,
+                'successful_operations': 0,
+                'failed_operations': 0,
+                'cache_hits': 0,
+                'cache_misses': 0,
+                'retry_attempts': 0,
+                'total_duration': 0.0
+            }
+        return self._stats
     
     def _get_cache_key(self, operation: str, **kwargs) -> str:
         """
@@ -453,8 +586,8 @@ class BrowserbaseTool(BaseTool):
         """
         Synchronous execution of the tool.
         
-        This method is required by CrewAI but should not be used for
-        browser automation. Use _arun instead.
+        This method is required by CrewAI. For browser tools, we run the
+        async method in a new event loop.
         
         Args:
             **kwargs: Tool arguments
@@ -462,8 +595,38 @@ class BrowserbaseTool(BaseTool):
         Returns:
             Tool result as string
         """
-        self.logger.warning("Synchronous execution not supported for browser tools. Use async execution.")
-        return "Error: Synchronous execution not supported for browser tools"
+        import asyncio
+        import threading
+        
+        try:
+            # Try to get the current event loop
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If there's already a running loop, run in a thread
+                def run_in_thread():
+                    new_loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(new_loop)
+                    try:
+                        return new_loop.run_until_complete(self._arun(**kwargs))
+                    finally:
+                        new_loop.close()
+                
+                # Use a thread to run the async method
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(run_in_thread)
+                    return future.result()
+            else:
+                # No running loop, we can use the current one
+                return loop.run_until_complete(self._arun(**kwargs))
+        except RuntimeError:
+            # No event loop exists, create a new one
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                return loop.run_until_complete(self._arun(**kwargs))
+            finally:
+                loop.close()
     
     async def _arun(self, **kwargs) -> str:
         """
@@ -619,7 +782,18 @@ class NavigationTool(BrowserbaseTool):
             })
             
         except Exception as e:
-            return json.dumps(await self._handle_error(e, "navigation").__dict__)
+            duration = time.time() - start_time
+            self._log_operation_stats("navigation", duration, False)
+            
+            # Handle error and return proper JSON
+            error_result = await self._handle_error(e, "navigation")
+            return json.dumps({
+                'status': 'error',
+                'error': error_result.error,
+                'duration': duration,
+                'timestamp': error_result.timestamp.isoformat(),
+                'url': url
+            })
 
 
 class InteractionTool(BrowserbaseTool):
@@ -765,7 +939,19 @@ class ExtractionTool(BrowserbaseTool):
             })
             
         except Exception as e:
-            return json.dumps(await self._handle_error(e, f"extraction_{extraction_type}").__dict__)
+            duration = time.time() - start_time
+            self._log_operation_stats(f"extraction_{extraction_type}", duration, False)
+            
+            # Handle error and return proper JSON
+            error_result = await self._handle_error(e, f"extraction_{extraction_type}")
+            return json.dumps({
+                'status': 'error',
+                'error': error_result.error,
+                'duration': duration,
+                'timestamp': error_result.timestamp.isoformat(),
+                'extraction_type': extraction_type,
+                'selector': selector
+            })
 
 
 class ScreenshotTool(BrowserbaseTool):

@@ -56,9 +56,24 @@ class VendorTool(BrowserbaseTool):
                  storage_manager: Optional[StorageManager] = None,
                  **kwargs):
         super().__init__(browser_manager, anti_bot_config, **kwargs)
-        self.vendor_config = vendor_config
-        self.storage_manager = storage_manager
-        self.logger = logging.getLogger(f"{__name__}.{vendor_config.name}")
+        self._vendor_config = vendor_config
+        self._storage_manager = storage_manager
+        self._logger = logging.getLogger(f"{__name__}.{vendor_config.name}")
+    
+    @property
+    def vendor_config(self) -> VendorConfig:
+        """Get the vendor configuration."""
+        return self._vendor_config
+    
+    @property
+    def storage_manager(self) -> Optional[StorageManager]:
+        """Get the storage manager."""
+        return self._storage_manager
+    
+    @property
+    def logger(self) -> logging.Logger:
+        """Get the logger."""
+        return self._logger
     
     async def _apply_vendor_specific_delays(self, operation: str) -> None:
         """Apply vendor-specific delays for different operations."""
@@ -140,7 +155,7 @@ class TescoTool(VendorTool):
     Tesco-specific tool extensions with Tesco's navigation patterns and anti-bot measures.
     """
     
-    def __init__(self, browser_manager: BrowserbaseManager, **kwargs):
+    def __init__(self, browser_manager: BrowserbaseManager, anti_bot_config=None, storage_manager=None, **kwargs):
         vendor_config = VendorConfig(
             name="Tesco",
             base_url="https://www.tesco.com",
@@ -186,8 +201,8 @@ class TescoTool(VendorTool):
                 'search': (1, 4)
             }
         )
-        super().__init__(browser_manager, vendor_config, **kwargs)
-    
+        super().__init__(browser_manager, vendor_config, anti_bot_config=anti_bot_config, storage_manager=storage_manager, **kwargs)
+    # support@browserbase.com
     async def navigate_to_category(self, category_name: str) -> Dict[str, Any]:
         """Navigate to a Tesco category using mega menu navigation."""
         try:
@@ -377,7 +392,7 @@ class AsdaTool(VendorTool):
     Asda-specific tool extensions with Asda's navigation patterns and anti-bot measures.
     """
     
-    def __init__(self, browser_manager: BrowserbaseManager, **kwargs):
+    def __init__(self, browser_manager: BrowserbaseManager, anti_bot_config=None, storage_manager=None, **kwargs):
         vendor_config = VendorConfig(
             name="Asda",
             base_url="https://groceries.asda.com",
@@ -438,7 +453,7 @@ class AsdaTool(VendorTool):
                 'infinite_scroll': (1, 3)
             }
         )
-        super().__init__(browser_manager, vendor_config, **kwargs)
+        super().__init__(browser_manager, vendor_config, anti_bot_config=anti_bot_config, storage_manager=storage_manager, **kwargs)
         
         # Asda-specific navigation state
         self.current_page = 1
@@ -1670,7 +1685,7 @@ class CostcoTool(VendorTool):
     Costco-specific tool extensions with robust error handling for Costco's unreliable site.
     """
     
-    def __init__(self, browser_manager: BrowserbaseManager, **kwargs):
+    def __init__(self, browser_manager: BrowserbaseManager, anti_bot_config=None, storage_manager=None, **kwargs):
         vendor_config = VendorConfig(
             name="Costco",
             base_url="https://www.costco.co.uk",
@@ -1738,7 +1753,7 @@ class CostcoTool(VendorTool):
             },
             max_retries=5  # More retries for Costco
         )
-        super().__init__(browser_manager, vendor_config, **kwargs)
+        super().__init__(browser_manager, vendor_config, anti_bot_config=anti_bot_config, storage_manager=storage_manager, **kwargs)
         
         # Costco-specific navigation state
         self.current_page = 1
