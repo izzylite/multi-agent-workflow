@@ -70,6 +70,62 @@ class BrowserManagerRegistry:
 browser_registry = BrowserManagerRegistry()
 
 
+# Global session registry to share sessions across tools
+class SessionRegistry:
+    """Global registry for browser sessions to avoid creating too many sessions."""
+    
+    _lock = threading.Lock()
+    _sessions: Dict[str, SessionInfo] = {}
+    _default_session: Optional[SessionInfo] = None
+    _default_operations: Optional[BrowserOperations] = None
+    
+    @classmethod
+    def register_session(cls, session: SessionInfo, name: str = "default") -> str:
+        """Register a session with the global registry."""
+        with cls._lock:
+            cls._sessions[name] = session
+            if name == "default":
+                cls._default_session = session
+            return name
+    
+    @classmethod
+    def get_session(cls, name: str = "default") -> Optional[SessionInfo]:
+        """Get a session from the registry."""
+        with cls._lock:
+            return cls._sessions.get(name)
+    
+    @classmethod
+    def get_default_session(cls) -> Optional[SessionInfo]:
+        """Get the default session."""
+        with cls._lock:
+            return cls._default_session
+    
+    @classmethod
+    def register_operations(cls, operations: BrowserOperations, name: str = "default") -> None:
+        """Register browser operations with the registry."""
+        with cls._lock:
+            if name == "default":
+                cls._default_operations = operations
+    
+    @classmethod
+    def get_default_operations(cls) -> Optional[BrowserOperations]:
+        """Get the default browser operations."""
+        with cls._lock:
+            return cls._default_operations
+    
+    @classmethod
+    def clear(cls):
+        """Clear all sessions from the registry."""
+        with cls._lock:
+            cls._sessions.clear()
+            cls._default_session = None
+            cls._default_operations = None
+
+
+# Global session registry instance
+session_registry = SessionRegistry()
+
+
 class ToolResultStatus(Enum):
     """Status of tool execution results."""
     SUCCESS = "success"
@@ -420,6 +476,18 @@ class BrowserbaseTool(BaseTool):
         Returns:
             Active session info
         """
+        # First try to get existing session from global registry
+        existing_session = session_registry.get_default_session()
+        existing_operations = session_registry.get_default_operations()
+        
+        if existing_session and existing_operations:
+            # Use existing session and operations
+            self.current_session = existing_session
+            self.browser_operations = existing_operations
+            self.logger.info(f"Reusing existing session: {existing_session.session_id}")
+            return existing_session
+        
+        # Create new session if none exists
         if self.current_session is None:
             # Apply anti-bot configuration to session
             enhanced_config = await self._configure_session_with_anti_bot(session_config)
@@ -437,6 +505,10 @@ class BrowserbaseTool(BaseTool):
             
             # Connect to the session
             await self.browser_operations.connect_session(self.current_session)
+            
+            # Register with global registry for sharing
+            session_registry.register_session(self.current_session)
+            session_registry.register_operations(self.browser_operations)
             
             self.logger.info(f"Created new session: {self.current_session.session_id} with anti-bot features")
         
@@ -868,7 +940,18 @@ class InteractionTool(BrowserbaseTool):
             })
             
         except Exception as e:
-            return json.dumps(await self._handle_error(e, f"interaction_{action}").__dict__)
+            duration = time.time() - start_time
+            self._log_operation_stats("interaction", duration, False)
+            error_result = await self._handle_error(e, f"interaction_{action}")
+            return json.dumps({
+                'status': 'error',
+                'error': error_result.error,
+                'duration': duration,
+                'timestamp': error_result.timestamp.isoformat(),
+                'action': action,
+                'selector': selector,
+                'value': value
+            })
 
 
 class ExtractionTool(BrowserbaseTool):
@@ -1009,7 +1092,17 @@ class ScreenshotTool(BrowserbaseTool):
             })
             
         except Exception as e:
-            return json.dumps(await self._handle_error(e, "screenshot").__dict__)
+            duration = time.time() - start_time
+            self._log_operation_stats("screenshot", duration, False)
+            error_result = await self._handle_error(e, "screenshot")
+            return json.dumps({
+                'status': 'error',
+                'error': error_result.error,
+                'duration': duration,
+                'timestamp': error_result.timestamp.isoformat(),
+                'path': path,
+                'full_page': full_page
+            })
 
 
 class WaitingTool(BrowserbaseTool):
@@ -1089,7 +1182,17 @@ class WaitingTool(BrowserbaseTool):
             })
             
         except Exception as e:
-            return json.dumps(await self._handle_error(e, f"wait_{wait_type}").__dict__)
+            duration = time.time() - start_time
+            self._log_operation_stats("wait", duration, False)
+            error_result = await self._handle_error(e, f"wait_{wait_type}")
+            return json.dumps({
+                'status': 'error',
+                'error': error_result.error,
+                'duration': duration,
+                'timestamp': error_result.timestamp.isoformat(),
+                'wait_type': wait_type,
+                'selector': selector
+            })
 
 
 # Factory functions for creating tools
